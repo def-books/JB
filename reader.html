@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Jack & Bruce – The Music Adventures</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream:#FFF8EE; --navy:#1A2744; --yellow:#FFD23F;
+    --coral:#FF6B6B; --teal:#2EC4B6; --purple:#6C63FF;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;font-family:'Nunito',sans-serif;background:var(--cream);color:var(--navy);overflow-x:hidden;}
+
+  /* ── LANDING ── */
+  #landing{display:flex;flex-direction:column;min-height:100vh;}
+  .hero{background:var(--navy);padding:44px 20px 32px;text-align:center;position:relative;overflow:hidden;}
+  .hero::before{content:'';position:absolute;top:-60px;left:-60px;width:200px;height:200px;background:var(--yellow);border-radius:50%;opacity:.1;}
+  .hero::after{content:'';position:absolute;bottom:-80px;right:-40px;width:250px;height:250px;background:var(--teal);border-radius:50%;opacity:.08;}
+  .music-notes{font-size:2rem;letter-spacing:12px;margin-bottom:12px;animation:float 3s ease-in-out infinite;position:relative;z-index:1;}
+  @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+  .hero h1{font-family:'Fredoka One',cursive;font-size:clamp(2.8rem,10vw,4.5rem);color:var(--yellow);line-height:1;letter-spacing:2px;position:relative;z-index:1;}
+  .hero h1 span{color:var(--coral);}
+  .hero-sub{font-size:1.05rem;color:rgba(255,255,255,.7);margin-top:10px;font-weight:600;position:relative;z-index:1;}
+  .characters-row{display:flex;justify-content:center;gap:16px;margin-top:22px;position:relative;z-index:1;}
+  .char-bubble{background:rgba(255,255,255,.1);border-radius:18px;padding:12px 20px;border:2px solid rgba(255,255,255,.2);text-align:center;}
+  .char-bubble .emoji{font-size:2.8rem;display:block;}
+  .char-bubble .name{font-family:'Fredoka One',cursive;color:#fff;font-size:1rem;margin-top:4px;}
+
+  .books-section{padding:32px 20px 60px;max-width:480px;margin:0 auto;width:100%;}
+  .section-label{font-family:'Fredoka One',cursive;font-size:1.25rem;color:var(--navy);text-align:center;margin-bottom:22px;}
+  .section-label span{background:var(--yellow);padding:2px 14px;border-radius:20px;}
+
+  .book-card{border-radius:22px;overflow:hidden;margin-bottom:20px;box-shadow:0 8px 32px rgba(26,39,68,.18);cursor:pointer;transition:transform .15s;}
+  .book-card:active{transform:translateY(2px);}
+  .book-card-top{height:150px;display:flex;align-items:center;justify-content:center;font-size:5rem;position:relative;overflow:hidden;}
+  .book-card-top .num-badge{position:absolute;top:12px;left:16px;background:rgba(0,0,0,.22);color:#fff;font-size:.78rem;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;padding:3px 10px;border-radius:20px;}
+  .book-card-top::before{content:'';position:absolute;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,.1);top:-40px;right:-40px;}
+  .bc1{background:linear-gradient(135deg,#6C63FF,#4B44CC);}
+  .bc2{background:linear-gradient(135deg,#FF6B6B,#CC3333);}
+  .bc3{background:linear-gradient(135deg,#2EC4B6,#1A9E92);}
+  .book-card-body{background:#fff;padding:18px 20px;}
+  .book-card-body h3{font-family:'Fredoka One',cursive;font-size:1.35rem;margin-bottom:6px;}
+  .bc1 h3{color:#6C63FF;}.bc2 h3{color:var(--coral);}.bc3 h3{color:var(--teal);}
+  .book-card-body p{font-size:.9rem;color:#666;line-height:1.5;margin-bottom:14px;}
+  .read-btn{display:inline-flex;align-items:center;gap:6px;border:none;border-radius:50px;padding:10px 22px;font-family:'Fredoka One',cursive;font-size:1rem;color:#fff;cursor:pointer;letter-spacing:.5px;}
+  .bc1 .read-btn{background:#6C63FF;}.bc2 .read-btn{background:var(--coral);}.bc3 .read-btn{background:var(--teal);}
+  .feedback-bar{background:var(--navy);padding:20px;text-align:center;color:#fff;}
+  .feedback-bar p{font-size:.88rem;opacity:.8;}
+  .feedback-bar strong{color:var(--yellow);}
+
+  /* ── READER ── */
+  #reader{display:none;position:fixed;inset:0;z-index:200;flex-direction:column;background:#111;}
+  .r-topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:rgba(0,0,0,.9);color:#fff;flex-shrink:0;}
+  .r-back{background:rgba(255,255,255,.15);border:none;color:#fff;font-family:'Nunito',sans-serif;font-weight:800;font-size:.95rem;padding:7px 16px;border-radius:20px;cursor:pointer;}
+  .r-title{font-family:'Fredoka One',cursive;font-size:.95rem;flex:1;text-align:center;}
+  .r-count{font-size:.78rem;color:rgba(255,255,255,.55);min-width:44px;text-align:right;}
+  .r-progress{height:4px;background:rgba(255,255,255,.15);flex-shrink:0;}
+  .r-progress-fill{height:100%;background:var(--yellow);transition:width .35s;}
+
+  /* Viewport clips the sliding pages */
+  .r-viewport{flex:1;position:relative;overflow:hidden;}
+
+  /* Each page stacks absolutely and slides */
+  .r-page{
+    position:absolute;top:0;left:0;right:0;bottom:0;
+    display:flex;flex-direction:column;
+    transform:translateX(100%);
+    transition:transform .38s cubic-bezier(.4,0,.2,1);
+    will-change:transform;
+  }
+  .r-page.active{transform:translateX(0);}
+  .r-page.exit-left{transform:translateX(-100%);}
+
+  /* Tap zones over the viewport */
+  .tap-prev,.tap-next{position:absolute;top:0;bottom:0;width:40%;z-index:10;cursor:pointer;}
+  .tap-prev{left:0;}.tap-next{right:0;}
+
+  .r-scene{flex:1;position:relative;overflow:hidden;}
+  .r-text{flex-shrink:0;background:#fff;padding:20px 22px 22px;min-height:120px;}
+  .r-text .page-head{font-family:'Fredoka One',cursive;font-size:1.4rem;margin-bottom:6px;}
+  .r-text p{font-size:1rem;line-height:1.65;font-weight:600;color:#222;}
+  .sound-word{font-family:'Fredoka One',cursive;font-size:1.6rem;display:block;margin:4px 0 8px;}
+
+  .r-navbar{display:flex;align-items:center;justify-content:space-between;padding:10px 20px;background:rgba(0,0,0,.75);flex-shrink:0;}
+  .r-arrow{background:rgba(255,255,255,.18);border:none;color:#fff;font-size:1.3rem;width:44px;height:44px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s;}
+  .r-arrow:hover{background:rgba(255,255,255,.32);}
+  .r-arrow:disabled{opacity:.3;cursor:default;}
+  .r-dots{display:flex;gap:7px;align-items:center;}
+  .r-dot{width:8px;height:8px;background:rgba(255,255,255,.3);border-radius:50%;cursor:pointer;transition:all .3s;}
+  .r-dot.on{background:var(--yellow);width:22px;border-radius:4px;}
+
+  /* ── SCENE HELPERS ── */
+  .abs{position:absolute;inset:0;}
+  .bg-day     {background:linear-gradient(180deg,#87CEEB 0%,#B0E0FF 55%,#90EE90 100%);}
+  .bg-night   {background:linear-gradient(180deg,#1a1a3e 0%,#2d2d6b 60%,#1a3320 100%);}
+  .bg-hall    {background:linear-gradient(180deg,#f5e6d3 0%,#e0ccb0 60%,#c4a882 100%);}
+  .bg-living  {background:linear-gradient(180deg,#fff3e0 0%,#ffe0b2 60%,#ffcc80 100%);}
+  .bg-stage   {background:linear-gradient(180deg,#2d0a3e 0%,#4a1060 60%,#1a0a28 100%);}
+  .bg-forest  {background:linear-gradient(180deg,#2e7d32 0%,#43a047 40%,#1b5e20 100%);}
+  .bg-park    {background:linear-gradient(180deg,#5bc8f5 0%,#90d9f7 50%,#7ec850 100%);}
+  .bg-attic   {background:linear-gradient(180deg,#c4a882 0%,#a08060 60%,#7a6040 100%);}
+  .bg-purple  {background:linear-gradient(180deg,#f0e6ff,#d9b3ff);}
+  .bg-soft    {background:linear-gradient(180deg,#e8f5f0,#c0e8dc);}
+  .bg-c1      {background:linear-gradient(145deg,#6C63FF,#4B44CC);}
+  .bg-c2      {background:linear-gradient(145deg,#FF6B6B,#CC3333);}
+  .bg-c3      {background:linear-gradient(145deg,#2EC4B6,#1A9E92);}
+  .bg-end1    {background:linear-gradient(145deg,#FFD23F,#F77F00);}
+  .bg-end2    {background:linear-gradient(145deg,#FF6B6B,#CC3333);}
+  .bg-end3    {background:linear-gradient(145deg,#2EC4B6,#1A9E92);}
+
+  .sc{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:16px;text-align:center;}
+  .be{font-size:7rem;filter:drop-shadow(0 8px 16px rgba(0,0,0,.28));line-height:1;}
+  .me{font-size:4rem;line-height:1;}
+  .se{font-size:2.5rem;line-height:1;}
+  .er{display:flex;gap:14px;align-items:flex-end;}
+  .fl{position:absolute;font-size:1.7rem;opacity:.7;animation:fa 3s ease-in-out infinite;}
+  .fl:nth-child(1){top:12%;left:10%;animation-delay:0s;}
+  .fl:nth-child(2){top:18%;right:12%;animation-delay:1s;}
+  .fl:nth-child(3){top:8%;left:48%;animation-delay:.5s;}
+  .fl:nth-child(4){top:28%;right:7%;animation-delay:1.5s;}
+  @keyframes fa{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-12px) rotate(8deg)}}
+  .gr{position:absolute;bottom:0;left:0;right:0;height:55px;}
+  .g-green{background:linear-gradient(#7ec850,#5a9e30);}
+  .g-floor{background:linear-gradient(#c4a882,#a08060);}
+
+  .cover-badge{background:rgba(255,255,255,.22);border:2px solid rgba(255,255,255,.38);border-radius:50px;padding:5px 16px;color:#fff;font-size:.78rem;font-weight:800;letter-spacing:2px;text-transform:uppercase;}
+  .cover-title{font-family:'Fredoka One',cursive;font-size:2rem;color:#fff;line-height:1.2;text-shadow:2px 2px 0 rgba(0,0,0,.2);}
+
+  .end-card{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:24px;text-align:center;}
+  .end-card .et{font-family:'Fredoka One',cursive;font-size:2rem;color:var(--navy);}
+  .end-card .es{font-size:.95rem;color:rgba(26,39,68,.75);font-weight:700;line-height:1.5;}
+  .star-row{display:flex;gap:10px;margin-top:4px;}
+  .star-btn{font-size:2.2rem;background:none;border:2px solid rgba(26,39,68,.2);border-radius:50%;width:52px;height:52px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .2s;}
+  .star-btn:hover{transform:scale(1.25);}
+  .rated-msg{display:none;font-family:'Fredoka One',cursive;font-size:1.05rem;color:var(--navy);}
+  .end-back{background:var(--navy);color:#fff;border:none;border-radius:50px;padding:14px 30px;font-family:'Fredoka One',cursive;font-size:1.05rem;cursor:pointer;margin-top:4px;letter-spacing:.5px;}
+  .c1{color:#6C63FF;}.c2{color:var(--coral);}.c3{color:var(--teal);}
+  .fw{font-family:'Fredoka One',cursive;}
+</style>
+</head>
+<body>
+
+<!-- ══ LANDING ══ -->
+<div id="landing">
+  <div class="hero">
+    <div class="music-notes">🎵 🎶 🎵</div>
+    <h1>Jack <span>&amp;</span> Bruce</h1>
+    <p class="hero-sub">The Music Adventures · Children's Book Series</p>
+    <div class="characters-row">
+      <div class="char-bubble"><span class="emoji">🦊</span><span class="name">Jack</span></div>
+      <div class="char-bubble"><span class="emoji">🐻</span><span class="name">Bruce</span></div>
+    </div>
+  </div>
+  <div class="books-section">
+    <p class="section-label"><span>📖 Choose a Book</span></p>
+    <div class="book-card" onclick="openBook(1)">
+      <div class="book-card-top bc1"><span class="num-badge">Book 1</span>🎹</div>
+      <div class="book-card-body bc1"><h3>The Magic Piano</h3><p>Jack and Bruce find a beautiful piano and discover that every key makes something amazing happen!</p><button class="read-btn">▶ Read Now · ~5 min</button></div>
+    </div>
+    <div class="book-card" onclick="openBook(2)">
+      <div class="book-card-top bc2"><span class="num-badge">Book 2</span>🥁</div>
+      <div class="book-card-body bc2"><h3>BOOM! The Big Drum</h3><p>Bruce finds a giant drum kit and the whole neighborhood can hear him — BOOM BOOM TAP TAP CRASH!</p><button class="read-btn">▶ Read Now · ~5 min</button></div>
+    </div>
+    <div class="book-card" onclick="openBook(3)">
+      <div class="book-card-top bc3"><span class="num-badge">Book 3</span>🎸</div>
+      <div class="book-card-body bc3"><h3>Strum! The Golden Guitar</h3><p>Jack finds a golden guitar in the attic and discovers the most wonderful sound he has ever heard.</p><button class="read-btn">▶ Read Now · ~5 min</button></div>
+    </div>
+  </div>
+  <div class="feedback-bar">
+    <p>📣 This is an <strong>audience preview</strong> — your feedback shapes the final books!</p>
+    <p style="margin-top:6px;font-size:.82rem;opacity:.6;">Rate each book after reading. Takes 5 seconds!</p>
+  </div>
+</div>
+
+<!-- ══ READER ══ -->
+<div id="reader">
+  <div class="r-topbar">
+    <button class="r-back" onclick="closeBook()">← Back</button>
+    <span class="r-title" id="rTitle"></span>
+    <span class="r-count" id="rCount"></span>
+  </div>
+  <div class="r-progress"><div class="r-progress-fill" id="rFill" style="width:10%"></div></div>
+  <div class="r-viewport" id="rVP">
+    <div class="tap-prev" onclick="prevPage()"></div>
+    <div class="tap-next" onclick="nextPage()"></div>
+  </div>
+  <div class="r-navbar">
+    <button class="r-arrow" id="rPrev" onclick="prevPage()">◀</button>
+    <div class="r-dots" id="rDots"></div>
+    <button class="r-arrow" id="rNext" onclick="nextPage()">▶</button>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════
+   BOOK DATA
+══════════════════════════════════════════ */
+const BOOKS = {
+ 1:{
+  title:'The Magic Piano',
+  pages:[
+   {s:`<div class="abs bg-c1"></div><div class="sc"><span class="fl">🎵</span><span class="fl">✨</span><span class="fl">🎶</span><span class="cover-badge">Book 1 · Music Adventures</span><span class="be">🎹</span><div class="cover-title">The Magic Piano</div><div style="font-size:3rem;margin-top:8px;">🦊🐻</div></div>`,
+    t:`<div class="page-head c1">The Magic Piano</div><p>A Jack &amp; Bruce Music Adventure · <strong>Book One</strong><br><em>Tap the right side to turn pages ➜</em></p>`},
+   {s:`<div class="abs bg-day"></div><div class="sc"><span class="fl">☀️</span><span class="fl">🌤️</span><div class="er"><span class="be">🦊</span><span class="be">🐻</span></div></div><div class="gr g-green"></div>`,
+    t:`<p>Jack the fox and Bruce the bear were best friends.<br>They loved music more than anything in the whole wide world.</p>`},
+   {s:`<div class="abs bg-hall"></div><div class="sc"><span class="fl">❓</span><span class="fl">✨</span><span class="be">🎹</span><div class="er" style="margin-top:8px;"><span class="me">🦊</span><span class="me">🐻</span></div></div><div class="gr g-floor"></div>`,
+    t:`<p>One day they found a big, beautiful piano.<br>It had <strong>black keys and white keys</strong> — so many they couldn't count them all!</p>`},
+   {s:`<div class="abs bg-hall"></div><div class="sc"><span class="fl">🎵</span><span class="be">🦊</span><div class="fw" style="font-size:2.8rem;color:#6C63FF;text-shadow:2px 2px 0 rgba(0,0,0,.15);">PLINK!</div></div><div class="gr g-floor"></div>`,
+    t:`<span class="sound-word c1">PLINK!</span><p>Jack pressed a tiny white key at the very top.<br>It made a small, high, happy sound — <em>plink plink plink!</em></p>`},
+   {s:`<div class="abs bg-hall"></div><div class="sc"><span class="fl">🎶</span><span class="be">🐻</span><div class="fw" style="font-size:2.8rem;color:#FF6B6B;text-shadow:2px 2px 0 rgba(0,0,0,.15);">BONG!</div></div><div class="gr g-floor"></div>`,
+    t:`<span class="sound-word c2">BONG!</span><p>Bruce pressed a big black key at the very bottom.<br>It made a deep, low, rumbly sound — <em>bong bong bong!</em></p>`},
+   {s:`<div class="abs bg-purple"></div><div class="sc"><span class="fl">🌟</span><span class="fl">💜</span><div class="er"><span class="be">🦊</span><span class="be">🐻</span></div><div class="fw" style="font-size:1.4rem;color:#6C63FF;margin-top:10px;">High ↑ · · · · · · · Low ↓</div></div>`,
+    t:`<p>Jack tried keys on the left — <strong>low and deep!</strong><br>Bruce tried keys on the right — <strong>high and bright!</strong><br>The piano had SO many different sounds!</p>`},
+   {s:`<div class="abs bg-night"></div><div class="sc"><span class="fl">🌙</span><span class="fl">⭐</span><div class="er"><span class="be">🦊</span><span class="be">🐻</span></div></div>`,
+    t:`<p>"Let's play a song <em>together!</em>" said Jack.<br>"But how?" asked Bruce. "We've never played before!"<br>Jack smiled his biggest fox smile. "We'll figure it out."</p>`},
+   {s:`<div class="abs bg-stage"></div><div class="sc"><span class="fl">🎵</span><span class="fl">🎶</span><span class="fl">✨</span><div class="er"><span class="me">🦊</span><span style="font-size:5rem;">🎹</span><span class="me">🐻</span></div></div>`,
+    t:`<span class="sound-word c1">PLINK… BONG… PLINK PLINK BONG!</span><p>They played slowly at first. Then faster! Then even faster!<br>The sounds flew together and became something beautiful.</p>`},
+   {s:`<div class="abs bg-night"></div><div class="sc"><span class="fl">🌙</span><span class="fl">⭐</span><span class="be">🦊</span><span class="se" style="margin-top:-8px;">💭</span></div>`,
+    t:`<p>That night, Jack couldn't sleep.<br>His paws were still moving — playing invisible piano keys in his dreams.<br><em>Plink… plink… bong…</em></p>`},
+   {s:`<div class="abs bg-end1"></div><div class="end-card"><div style="font-size:4rem;">🎹🦊🐻</div><div class="et">The End!</div><div class="es">Did you enjoy <em>The Magic Piano?</em><br>Tap the stars to rate it!</div><div class="star-row" id="sr1"><button class="star-btn" onclick="rate(1,1)">⭐</button><button class="star-btn" onclick="rate(1,2)">⭐</button><button class="star-btn" onclick="rate(1,3)">⭐</button><button class="star-btn" onclick="rate(1,4)">⭐</button><button class="star-btn" onclick="rate(1,5)">⭐</button></div><div class="rated-msg" id="rm1">Thanks! 🎉 Your vote counts!</div><button class="end-back" onclick="closeBook()">← Back to All Books</button></div>`,
+    t:null}
+  ]
+ },
+ 2:{
+  title:'BOOM! The Big Drum',
+  pages:[
+   {s:`<div class="abs bg-c2"></div><div class="sc"><span class="fl">💥</span><span class="fl">🎶</span><span class="fl">🔥</span><span class="cover-badge">Book 2 · Music Adventures</span><span class="be">🥁</span><div class="cover-title">BOOM!<br>The Big Drum</div><div style="font-size:3rem;margin-top:8px;">🦊🐻</div></div>`,
+    t:`<div class="page-head c2">BOOM! The Big Drum</div><p>A Jack &amp; Bruce Music Adventure · <strong>Book Two</strong><br><em>Tap the right side to turn pages ➜</em></p>`},
+   {s:`<div class="abs bg-park"></div><div class="sc"><span class="fl">🌸</span><span class="fl">☁️</span><div class="er"><span class="be">🦊</span><span class="be">🐻</span></div></div><div class="gr g-green"></div>`,
+    t:`<p>Jack and Bruce were walking home from the park.<br>Then Bruce stopped. He tilted his big bear ears.<br>"Shhhh," he said. "Do you hear that?"</p>`},
+   {s:`<div class="abs bg-living"></div><div class="sc"><span class="fl">🎶</span><span class="fl">💥</span><span class="be">🥁</span></div><div class="gr g-floor"></div>`,
+    t:`<span class="sound-word c2">BOOM! TAP! CRASH!</span><p>Someone was playing a <strong>great big drum kit</strong>.<br>The sound shook the windows. It rattled the doors.<br>It even wiggled Bruce's fur!</p>`},
+   {s:`<div class="abs bg-living"></div><div class="sc"><span class="fl">✨</span><span class="be">🐻</span><div class="fw" style="font-size:2.5rem;color:#FF6B6B;">👀 !!!</div></div><div class="gr g-floor"></div>`,
+    t:`<p>Bruce's eyes went <strong>WIDE</strong>.<br>His paws started to wiggle.<br>His feet started to stomp — all on their own!<br><em>Stomp. Stomp. STOMP!</em></p>`},
+   {s:`<div class="abs bg-living"></div><div class="sc"><span class="fl">💥</span><div class="er"><span class="be">🐻</span><span style="font-size:5rem;">🥁</span></div></div><div class="gr g-floor"></div>`,
+    t:`<span class="sound-word c2">BOOM BOOM BOOM!</span><p>Bruce sat behind the big drum.<br>He picked up the sticks. He took a deep breath…<br>and <strong>HIT IT!</strong></p>`},
+   {s:`<div class="abs bg-day"></div><div class="sc"><span class="fl">🐦</span><span class="fl">🌳</span><span style="font-size:5rem;">😲</span><div style="font-size:1.3rem;font-weight:800;color:#1A2744;padding:0 20px;">The whole street heard it!</div></div><div class="gr g-green"></div>`,
+    t:`<p>The birds flew out of the trees.<br>The cat next door jumped straight up!<br>A little girl down the road started dancing.<br>Everybody could hear Bruce!</p>`},
+   {s:`<div class="abs bg-living"></div><div class="sc"><span class="fl">🎵</span><div class="er"><span class="me">🦊</span><span class="me">🎸</span></div></div><div class="gr g-floor"></div>`,
+    t:`<p>"I can keep the beat!" said Bruce proudly.<br>Jack grabbed a guitar and played along.<br>"One, two, three, four —" counted Jack.<br>They were making <strong>real music!</strong></p>`},
+   {s:`<div class="abs bg-stage"></div><div class="sc"><span class="fl">🌟</span><span class="fl">💥</span><div class="er"><span class="me">🦊</span><span style="font-size:4.5rem;">🥁</span><span class="me">🐻</span></div><div class="fw" style="color:#fff;font-size:1.4rem;margin-top:10px;">👏 👏 👏</div></div>`,
+    t:`<span class="sound-word c2">BOOM TAP TAP · CRASH · BOOM BOOM TAP!</span><p>The rhythm got louder! The beat got stronger!<br>Soon their friends filled the room — clapping and dancing!</p>`},
+   {s:`<div class="abs bg-night"></div><div class="sc"><span class="fl">🌙</span><span class="be">🐻</span></div>`,
+    t:`<p>That night, Bruce sat very still and very quiet.<br>But inside, his heart was going…<br><em>Boom. Boom. Boom.</em><br>Just like a drum. His own secret rhythm.</p>`},
+   {s:`<div class="abs bg-end2"></div><div class="end-card"><div style="font-size:4rem;">🥁🦊🐻</div><div class="et">The End!</div><div class="es">Did you enjoy <em>BOOM! The Big Drum?</em><br>Tap the stars to rate it!</div><div class="star-row" id="sr2"><button class="star-btn" onclick="rate(2,1)">⭐</button><button class="star-btn" onclick="rate(2,2)">⭐</button><button class="star-btn" onclick="rate(2,3)">⭐</button><button class="star-btn" onclick="rate(2,4)">⭐</button><button class="star-btn" onclick="rate(2,5)">⭐</button></div><div class="rated-msg" id="rm2">Thanks! 🎉 You rock!</div><button class="end-back" onclick="closeBook()">← Back to All Books</button></div>`,
+    t:null}
+  ]
+ },
+ 3:{
+  title:'Strum! The Golden Guitar',
+  pages:[
+   {s:`<div class="abs bg-c3"></div><div class="sc"><span class="fl">🌟</span><span class="fl">🎵</span><span class="fl">✨</span><span class="cover-badge">Book 3 · Music Adventures</span><span class="be">🎸</span><div class="cover-title">Strum!<br>The Golden Guitar</div><div style="font-size:3rem;margin-top:8px;">🦊🐻</div></div>`,
+    t:`<div class="page-head c3">Strum! The Golden Guitar</div><p>A Jack &amp; Bruce Music Adventure · <strong>Book Three</strong><br><em>Tap the right side to turn pages ➜</em></p>`},
+   {s:`<div class="abs bg-attic"></div><div class="sc"><span class="fl">🕯️</span><span class="fl">📦</span><span class="be">🦊</span></div><div class="gr g-floor"></div>`,
+    t:`<p>One rainy afternoon, Jack was exploring the old attic.<br>There were dusty boxes and forgotten things everywhere.<br>Then he saw something <strong>glinting</strong> in the corner…</p>`},
+   {s:`<div class="abs bg-attic"></div><div class="sc"><span class="fl">✨</span><span class="fl">🌟</span><span class="be">🎸</span></div><div class="gr g-floor"></div>`,
+    t:`<p>A golden guitar! It sparkled even in the dusty dark.<br>Jack picked it up very gently in both paws.<br>It was the most beautiful thing he had ever held.</p>`},
+   {s:`<div class="abs bg-soft"></div><div class="sc"><span class="fl">🎵</span><span class="be">🦊</span><div class="fw" style="font-size:2.5rem;color:#2EC4B6;text-shadow:2px 2px 0 rgba(0,0,0,.1);">twang…</div></div>`,
+    t:`<span class="sound-word c3">twang…</span><p>Jack touched one string — just one.<br>The sound rang out slow and sweet and warm.<br>It floated through the attic like a little golden cloud.</p>`},
+   {s:`<div class="abs bg-park"></div><div class="sc"><span class="fl">☀️</span><div class="er"><span class="be">🦊</span><span class="be">🐻</span></div></div><div class="gr g-green"></div>`,
+    t:`<p>Jack ran all the way to Bruce's house.<br>"You HAVE to hear this!" he said, panting.<br>Bruce crossed his arms. "Hear what?" he said.<br>"Just come," said Jack. "Come <em>right now.</em>"</p>`},
+   {s:`<div class="abs bg-living"></div><div class="sc"><span class="fl">✨</span><div class="er"><span class="me">🐻</span><span style="font-size:3rem;">😲</span></div></div><div class="gr g-floor"></div>`,
+    t:`<span class="sound-word c3">STRUM! 🎸</span><p>Jack strummed all the strings at once.<br>The sound filled the whole room.<br>Bruce's mouth fell open. His ears went flat.<br>"Woooooah," he whispered.</p>`},
+   {s:`<div class="abs bg-soft"></div><div class="sc"><span class="fl">🎵</span><span class="fl">🥁</span><div class="er"><span class="me">🦊</span><span style="font-size:4.5rem;">🎸</span><span class="me">🐻</span><span class="se">🥁</span></div></div>`,
+    t:`<p>"I'll play drums," said Bruce, "and <em>you</em> play guitar!"<br>Jack strummed — STRUM STRUM STRUM.<br>Bruce drummed — BOOM TAP BOOM.<br>Together they made something <strong>magical.</strong></p>`},
+   {s:`<div class="abs bg-forest"></div><div class="sc"><span class="fl">🌿</span><span class="fl">🦋</span><div class="er"><span class="be">🦊</span><span class="be">🐻</span></div><div style="font-size:2rem;margin-top:10px;">🐦 🦔 🐿️ 🐰</div></div><div class="gr g-green"></div>`,
+    t:`<p>They played outside under the tall green trees.<br>Birds landed nearby to listen.<br>A hedgehog poked his nose out.<br>Even the wind seemed to stop and hear.</p>`},
+   {s:`<div class="abs bg-night"></div><div class="sc"><span class="fl">🌙</span><span class="fl">⭐</span><div class="er"><span class="be">🦊</span><span class="be">🐻</span></div></div>`,
+    t:`<p>"Jack," said Bruce quietly, looking at the stars,<br>"music makes everything better."<br>Jack smiled and held the golden guitar close.<br>"It does," he said. "It really does."</p>`},
+   {s:`<div class="abs bg-end3"></div><div class="end-card"><div style="font-size:4rem;">🎸🦊🐻</div><div class="et">The End!</div><div class="es">Loved <em>The Golden Guitar?</em><br>Tap the stars to rate it!</div><div class="star-row" id="sr3"><button class="star-btn" onclick="rate(3,1)">⭐</button><button class="star-btn" onclick="rate(3,2)">⭐</button><button class="star-btn" onclick="rate(3,3)">⭐</button><button class="star-btn" onclick="rate(3,4)">⭐</button><button class="star-btn" onclick="rate(3,5)">⭐</button></div><div class="rated-msg" id="rm3">Thanks! 🎉 More adventures coming soon!</div><button class="end-back" onclick="closeBook()">← Back to All Books</button></div>`,
+    t:null}
+  ]
+ }
+};
+
+/* ══════════════════════════════════════════
+   READER ENGINE  (fixed page transition)
+══════════════════════════════════════════ */
+var curBook=null, curIdx=0, pageEls=[];
+
+function openBook(n){
+  curBook=BOOKS[n]; curIdx=0;
+  document.getElementById('rTitle').textContent=curBook.title;
+
+  // Remove old pages
+  pageEls.forEach(function(el){el.remove();});
+  pageEls=[];
+
+  var vp=document.getElementById('rVP');
+  curBook.pages.forEach(function(p,i){
+    var el=document.createElement('div');
+    el.className='r-page'; // all start translateX(100%) — off right
+    el.innerHTML='<div class="r-scene">'+p.s+'</div>'+(p.t?'<div class="r-text">'+p.t+'</div>':'');
+    vp.appendChild(el);
+    pageEls.push(el);
+  });
+
+  // Show first page immediately (no animation needed)
+  pageEls[0].style.transition='none';
+  pageEls[0].classList.add('active');
+  // restore transition after paint
+  requestAnimationFrame(function(){
+    requestAnimationFrame(function(){
+      pageEls[0].style.transition='';
+    });
+  });
+
+  buildDots(); syncUI();
+  document.getElementById('landing').style.display='none';
+  document.getElementById('reader').style.display='flex';
+  document.body.style.overflow='hidden';
+}
+
+function closeBook(){
+  document.getElementById('reader').style.display='none';
+  document.getElementById('landing').style.display='flex';
+  document.body.style.overflow='';
+}
+
+function goTo(next){
+  var total=curBook.pages.length;
+  if(next<0||next>=total) return;
+
+  var oldEl=pageEls[curIdx];
+  var newEl=pageEls[next];
+  var forward=next>curIdx;
+
+  if(forward){
+    // Old page slides left, new page comes from right (already there)
+    oldEl.classList.add('exit-left');
+    oldEl.classList.remove('active');
+    newEl.classList.add('active');
+  } else {
+    // New page starts off-screen LEFT, slides into center; old page goes right
+    newEl.style.transition='none';
+    newEl.style.transform='translateX(-100%)';
+    void newEl.offsetWidth; // force reflow
+    newEl.style.transition='';
+    newEl.style.transform='';
+    newEl.classList.add('active');
+
+    oldEl.style.transition='transform .38s cubic-bezier(.4,0,.2,1)';
+    oldEl.style.transform='translateX(100%)';
+    oldEl.classList.remove('active');
+    (function(el){
+      setTimeout(function(){
+        el.style.transition='';
+        el.style.transform='';
+      },420);
+    })(oldEl);
+  }
+
+  // Clean up exit-left after animation
+  (function(el){
+    setTimeout(function(){ el.classList.remove('exit-left'); },420);
+  })(oldEl);
+
+  curIdx=next;
+  syncUI();
+}
+
+function nextPage(){ goTo(curIdx+1); }
+function prevPage(){ goTo(curIdx-1); }
+
+function buildDots(){
+  var c=document.getElementById('rDots');
+  c.innerHTML='';
+  curBook.pages.forEach(function(_,i){
+    var d=document.createElement('div');
+    d.className='r-dot';
+    d.onclick=function(){ goTo(i); };
+    c.appendChild(d);
+  });
+}
+
+function syncUI(){
+  var total=curBook.pages.length;
+  document.getElementById('rCount').textContent=(curIdx+1)+' / '+total;
+  document.getElementById('rPrev').disabled=(curIdx===0);
+  document.getElementById('rNext').disabled=(curIdx===total-1);
+  document.getElementById('rFill').style.width=((curIdx+1)/total*100)+'%';
+  var dots=document.querySelectorAll('.r-dot');
+  dots.forEach(function(d,i){ d.classList.toggle('on',i===curIdx); });
+}
+
+// Swipe
+var tx0=0;
+document.getElementById('rVP').addEventListener('touchstart',function(e){ tx0=e.touches[0].clientX; },{passive:true});
+document.getElementById('rVP').addEventListener('touchend',function(e){
+  var dx=e.changedTouches[0].clientX-tx0;
+  if(Math.abs(dx)>45){ dx<0?nextPage():prevPage(); }
+});
+
+function rate(book,stars){
+  document.getElementById('sr'+book).style.display='none';
+  document.getElementById('rm'+book).style.display='block';
+  try{ localStorage.setItem('jb_r'+book,stars); }catch(e){}
+}
+</script>
+</body>
+</html>
